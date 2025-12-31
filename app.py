@@ -1,10 +1,9 @@
- import streamlit as st
+import streamlit as st
 import pickle
 import pandas as pd
 
-st.set_page_config(page_title="Customer Churn Prediction", layout="centered")
+st.set_page_config(page_title="Dashen Churn Prediction", layout="centered")
 
-# Load model
 with open("model.pkl", "rb") as f:
     artifacts = pickle.load(f)
 
@@ -21,10 +20,10 @@ input_df = pd.DataFrame([inputs])
 
 if st.button("Predict"):
     pred = model.predict(input_df)[0]
-    proba = model.predict_proba(input_df)[0][1]
+    prob = model.predict_proba(input_df)[0][1]
 
     if pred == 1:
-        st.error(f"⚠️ Likely to churn ({proba:.2%})")
+        st.error(f"⚠️ Likely to churn ({prob:.2%})")
     else:
-        st.success(f"✅ Not likely to churn ({proba:.2%})")
+        st.success(f"✅ Not likely to churn ({prob:.2%})")
 

@@ -1,29 +1,51 @@
-import streamlit as st
+import gradio as gr
 import pickle
 import pandas as pd
 
-st.set_page_config(page_title="Dashen Churn Prediction", layout="centered")
-
+# Load model
 with open("model.pkl", "rb") as f:
-    artifacts = pickle.load(f)
+    model = pickle.load(f)
 
-model = artifacts["model"]
-features = artifacts["features"]
+# 🔹 Update these feature names to MATCH your training data
+FEATURES = [
+    "gender",
+    "SeniorCitizen",
+    "Partner",
+    "Dependents",
+    "tenure",
+    "PhoneService",
+    "InternetService",
+    "MonthlyCharges",
+    "TotalCharges"
+]
 
-st.title("📊 Customer Churn Prediction")
+def predict_churn(*inputs):
+    data = pd.DataFrame([inputs], columns=FEATURES)
+    prediction = model.predict(data)[0]
+    prob = model.predict_proba(data)[0][1]
 
-inputs = {}
-for col in features:
-    inputs[col] = st.number_input(col, value=0.0)
+    label = "Churn" if prediction == 1 else "No Churn"
+    return f"{label} (Probability: {prob:.2f})"
 
-input_df = pd.DataFrame([inputs])
+inputs = [
+    gr.Dropdown(["Male", "Female"], label="Gender"),
+    gr.Dropdown([0, 1], label="Senior Citizen"),
+    gr.Dropdown(["Yes", "No"], label="Partner"),
+    gr.Dropdown(["Yes", "No"], label="Dependents"),
+    gr.Number(label="Tenure (months)"),
+    gr.Dropdown(["Yes", "No"], label="Phone Service"),
+    gr.Dropdown(["DSL", "Fiber optic", "No"], label="Internet Service"),
+    gr.Number(label="Monthly Charges"),
+    gr.Number(label="Total Charges"),
+]
 
-if st.button("Predict"):
-    pred = model.predict(input_df)[0]
-    prob = model.predict_proba(input_df)[0][1]
+app = gr.Interface(
+    fn=predict_churn,
+    inputs=inputs,
+    outputs=gr.Textbox(label="Prediction"),
+    title="Customer Churn Prediction",
+    description="Predict whether a customer is likely to churn using a trained ML model."
+)
 
-    if pred == 1:
-        st.error(f"⚠️ Likely to churn ({prob:.2%})")
-    else:
-        st.success(f"✅ Not likely to churn ({prob:.2%})")
+app.launch()
 

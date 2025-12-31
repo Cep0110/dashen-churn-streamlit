@@ -1,8 +1,5 @@
-streamlit 
-scikit-learn 
-pandas 
-numpy 
-joblib 
-Pillow 
-
+streamlit
+pandas
+numpy
+scikit-learn
 
